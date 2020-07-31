@@ -1,3 +1,5 @@
+# ![install](install.png)
+
 ```
 部署方式
 1、使用Dockerfile基于debian生成个镜像，网络太差，上传不到hub去
