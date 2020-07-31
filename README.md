@@ -1,6 +1,13 @@
 # ![install](install.png)
 
 ```
+声明：
+所有文件均来自互联网，本人只是大自然的搬运工
+涉及到公司的代码已删除
+如有冒犯请通知本人，及时删除
+```
+
+```
 部署方式
 1、使用Dockerfile基于debian生成个镜像，网络太差，上传不到hub去
 2、自行安装ansible，反正大概其都是Dockerfile里面的命令，你apt、yum了就行了，然后拷贝ansible目录到相应地方
