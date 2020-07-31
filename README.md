@@ -12,6 +12,7 @@
 1、使用Dockerfile基于debian生成个镜像，网络太差，上传不到hub去
 2、自行安装ansible，反正大概其都是Dockerfile里面的命令，你apt、yum了就行了，然后拷贝ansible目录到相应地方
 3、install/clean你懂，理论是一键部署，我测试的结果
+4、上图为amd64、arm64混构
 ```
 
 ```
