@@ -1,0 +1,16 @@
+#!/bin/bash
+echo "        ######################################"
+echo "        ##    晋商博创(北京)科技有限公司    ##"
+echo "        ##        JS Bochtec Co.,Ltd.       ##"
+echo "######################################################"
+echo "##    --                                            ##"
+echo "##   ----       自  主  可  控  云  平  台          ##"
+echo "##    /   Independent Controllable Cloud Platform   ##"
+echo "##   ----                                           ##"
+echo "######################################################"
+
+# 生成免密文件
+echo y | ssh-keygen -t rsa -b 2048 -N '' -f /root/.ssh/id_rsa > /dev/null 2>&1
+
+# 一键自动部署
+ansible-playbook 99.install.yml | tee /tmp/install.log 2>&1

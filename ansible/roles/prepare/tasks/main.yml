@@ -1,0 +1,16 @@
+# 系统基础软件环境
+- name: apt更新缓存刷新
+  apt: update_cache=yes cache_valid_time=72000
+  ignore_errors: true
+  when:
+  - 'ansible_distribution in ["Ubuntu","Debian","Kylin","uos"]'
+  - 'INSTALL_SOURCE != "offline"'
+
+- import_tasks: ubuntu.yml
+  when: 'ansible_distribution in ["Ubuntu","Debian","Kylin","uos"]'
+
+- import_tasks: centos.yml
+  when: 'ansible_distribution in ["CentOS","RedHat","Amazon"]' 
+
+# 公共系统参数设置
+- import_tasks: common.yml

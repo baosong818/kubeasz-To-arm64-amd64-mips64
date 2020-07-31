@@ -1,0 +1,50 @@
+- name: 获取是否已经安装containerd
+  shell: 'systemctl status containerd|grep Active || echo "NOT FOUND"'
+  register: containerd_status
+
+- name: fail info1
+  fail: msg="Containerd already installed!"
+  when: '"running" in containerd_status.stdout'
+
+- name: 添加Docker-ce 仓库
+  shell: "wget http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo -O /etc/yum.repos.d/docker-ce.repo"
+  when: 'INSTALL_SOURCE != "offline"'
+
+- name: 安装Docker 软件包
+  yum: 
+    name: 
+      - docker-ce-19.03.12
+      - docker-ce-cli-19.03.12
+      - containerd.io
+      - container-selinux
+    state: present
+  when: 'INSTALL_SOURCE != "offline"'
+
+# 离线安装Docker 软件包
+- import_tasks: offline.yml
+  when: 'INSTALL_SOURCE == "offline"'
+
+- name: 准备docker相关目录
+  file: name=/etc/docker state=directory
+
+- name: docker国内镜像加速
+  template: src=daemon.json.j2 dest=/etc/docker/daemon.json
+    
+- name: 开机启用docker 服务
+  shell: systemctl enable docker
+  ignore_errors: true
+    
+- name: 开启docker 服务
+  shell: systemctl daemon-reload && systemctl restart docker
+  tags: upgrade_docker
+    
+- name: 轮询等待docker服务运行
+  shell: "systemctl status docker.service|grep Active"
+  register: docker_status
+  until: '"running" in docker_status.stdout'
+  retries: 8
+  delay: 2
+  tags: upgrade_docker
+
+- name: 认证登陆
+  shell: "docker login -u bochtec -p Passw0rd https://harbor.bochtec.com"

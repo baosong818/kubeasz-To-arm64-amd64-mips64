@@ -1,0 +1,20 @@
+# Using alternate directory locations:
+- hosts: all
+  user: root
+  tasks:
+    - name: ssh-copy
+      authorized_key: user=root key="{{ lookup('file', '/root/.ssh/id_rsa.pub') }}"
+
+    - name: change name
+      raw: "echo {{ hostname|quote }} > /etc/hostname"
+
+    - name: set hostname
+      shell: "hostnamectl set-hostname {{ hostname|quote }}"
+
+    - name: "add the line to the tail of the file"
+      blockinfile:
+        path: /etc/hosts
+        block: |
+          {{ item.name }}
+      with_items:
+        - { name: "{% for node in groups['all'] %}{{ hostvars[node]['ansible_ssh_host'] }}   {{ hostvars[node]['hostname'] }}\n{% endfor %}" }

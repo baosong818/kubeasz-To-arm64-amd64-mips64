@@ -1,0 +1,59 @@
+apiVersion: kubeadm.k8s.io/v1beta2
+bootstrapTokens:
+- groups:
+  - system:bootstrappers:kubeadm:default-node-token
+  token: abcdef.0123456789abcdef
+  ttl: 24h0m0s
+  usages:
+  - signing
+  - authentication
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: {{ inventory_hostname }}
+  bindPort: 6443
+nodeRegistration:
+  criSocket: /var/run/dockershim.sock
+  name: {{ hostname|quote }}
+  taints:
+  - effect: NoSchedule 
+    key: node-role.kubernetes.io/master
+---
+apiServer:
+  timeoutForControlPlane: 4m0s
+  certSANs:
+{% if groups['ex-lb']|length > 0 %}
+  - "{{ EX_APISERVER_VIP }}"
+{% endif %}
+{% for host in groups['kube-master'] %}
+  - "{{ host }}"
+{% endfor %}
+{% for node in groups['kube-master'] %}
+  - "{{ hostvars[node]['NODE_NAME'] }}"
+{% endfor %}
+  - "127.0.0.1"
+apiVersion: kubeadm.k8s.io/v1beta2
+certificatesDir: /etc/kubernetes/pki
+clusterName: kubernetes
+controllerManager: {}
+{% if groups['ex-lb']|length > 0 %}
+controlPlaneEndpoint: "{{ EX_APISERVER_VIP }}:{{ EX_APISERVER_PORT }}"
+{% endif %}
+dns:
+  type: CoreDNS
+etcd:
+  local:
+    extraArgs:
+      listen-metrics-urls: http://0.0.0.0:4001
+    dataDir: /var/lib/etcd
+imageRepository: {{ Image_Repo }}
+kind: ClusterConfiguration
+kubernetesVersion: v1.15.12
+networking:
+  dnsDomain: cluster.local
+  serviceSubnet: {{ SERVICE_CIDR }}
+  podSubnet: {{ CLUSTER_CIDR }}
+scheduler: {}
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+metricsBindAddress: 0.0.0.0:10249

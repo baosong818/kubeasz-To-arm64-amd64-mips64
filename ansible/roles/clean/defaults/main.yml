@@ -1,0 +1,8 @@
+# 是否删除 kube 相关服务
+DEL_MASTER: "yes"
+
+# 是否删除 lb 相关服务
+DEL_LB: "yes"
+
+# 是否删除 chrony 相关服务
+DEL_CHRONY: "yes"

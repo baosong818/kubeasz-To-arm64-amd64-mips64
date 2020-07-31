@@ -1,0 +1,80 @@
+# all
+[all]
+192.168.20.41 hostname=node1 ansible_ssh_host=192.168.20.41 ansible_ssh_user="root" ansible_ssh_pass="100trust"
+192.168.20.46 hostname=node2 ansible_ssh_host=192.168.20.46 ansible_ssh_user="root" ansible_ssh_pass="100trust"
+192.168.19.46 hostname=node3 ansible_ssh_host=192.168.19.46 ansible_ssh_user="root" ansible_ssh_pass="passw0rd"
+
+# 'etcd' cluster should have odd member(s) (1,3,5,...)
+# variable 'NODE_NAME' is the distinct name of a member in 'etcd' cluster
+#[etcd]
+#192.168.20.41
+
+# master node(s)
+[kube-master]
+192.168.20.41 NODE_NAME=node1
+192.168.20.46 NODE_NAME=node2
+192.168.19.46 NODE_NAME=node3
+
+# work node(s)
+[kube-node]
+192.168.20.41
+192.168.20.46
+192.168.19.46
+
+# [optional] harbor server, a private docker registry
+# 'NEW_INSTALL': 'yes' to install a harbor server; 'no' to integrate with existed one
+# 'SELF_SIGNED_CERT': 'no' you need put files of certificates named harbor.pem and harbor-key.pem in directory 'down'
+[harbor]
+#192.168.1.8 HARBOR_DOMAIN="harbor.yourdomain.com" NEW_INSTALL=no SELF_SIGNED_CERT=yes
+
+# [optional] loadbalance for accessing k8s from outside
+[ex-lb]
+192.168.20.41 LB_ROLE=master EX_APISERVER_VIP=192.168.20.40 EX_APISERVER_PORT=8443
+192.168.20.46 LB_ROLE=backup EX_APISERVER_VIP=192.168.20.40 EX_APISERVER_PORT=8443
+
+# [optional] ntp server for the cluster
+[chrony]
+192.168.19.46
+
+[all:vars]
+# --------- Main Variables ---------------
+# ex-lb EX_APISERVER_VIP
+EX_APISERVER_VIP=192.168.20.40
+
+# Harbor Url
+Image_Repo="harbor.bochtec.com/k8s115"
+
+# Domain Name
+Service_Domain="api.iccp.test1.com"
+Static_Domain="iccp.test1.com"
+Dashboard_Domain="dashboard.test1.com"
+
+# Mysql
+ICCP_DB="iccp"
+ICCP_USER="iccp"
+ICCP_PASS="iccp123"
+
+# Cluster container-runtime supported: docker, containerd
+CONTAINER_RUNTIME="docker"
+
+# Network plugins supported: calico, flannel, kube-router, cilium, kube-ovn
+CLUSTER_NETWORK="calico"
+
+# Service proxy mode of kube-proxy: 'iptables' or 'ipvs'
+PROXY_MODE="iptables"
+
+# K8S Service CIDR, not overlap with node(host) networking
+SERVICE_CIDR="10.68.0.0/16"
+
+# Cluster CIDR (Pod CIDR), not overlap with node(host) networking
+CLUSTER_CIDR="172.20.0.0/16"
+
+# Cluster DNS Domain
+CLUSTER_DNS_DOMAIN="cluster.local."
+
+# -------- Additional Variables (don't change the default value right now) ---
+# K8s Directory
+k8s_dir="/etc/kubernetes"
+
+# Deploy Directory (kubeasz workspace)
+base_dir="/etc/ansible"

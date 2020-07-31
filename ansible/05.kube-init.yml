@@ -1,0 +1,23 @@
+- hosts: kube-master
+  roles:
+  - kube-init
+  tags: a0
+
+- hosts: localhost
+  tasks:
+    - name: 本机拷贝kube 配置文件
+      shell: "tar xf {{ base_dir }}/manifests/kube-init/pki.tar.gz -C {{ base_dir }}/manifests/kube-init/ && rm -rf $HOME/.kube && /bin/mkdir $HOME/.kube && /bin/cp -i /etc/ansible/manifests/kube-init/admin.conf $HOME/.kube/config && chown $(id -u):$(id -g) $HOME/.kube/config"
+
+    - name: 创建admin 用户访问权限
+      shell: "kubectl apply -f {{ base_dir }}/manifests/dashboard/admin-user-sa-rbac.yaml"
+  tags: a1
+
+- hosts: kube-master
+  roles:
+  - { role: kube-master, when: "inventory_hostname != groups['kube-master'][0]" }
+  tags: a2
+
+- hosts: kube-node
+  roles:
+  - { role: kube-node, when: "inventory_hostname not in groups['kube-master']" }
+  tags: a4

@@ -1,0 +1,48 @@
+- name: 创建kubernetes 证书目录
+  file: name={{ item }} state=directory
+  with_items:
+  - "{{ k8s_dir }}"
+
+- name: 分发kube 配置文件
+  copy:
+    src: "{{ base_dir }}/manifests/kube-init/{{ item }}"
+    dest: "{{ k8s_dir }}/{{ item }}"
+  with_items:
+  - "admin.conf"
+  - "pki.tar.gz"
+
+- name: 解压kube 配置文件
+  shell: "tar xf {{ k8s_dir }}/pki.tar.gz -C {{ k8s_dir }}/"
+
+- block:
+  - name: 注册变量 KUBE_MASTER_TOKEN_TMP
+    shell: "grep -A 3 'kubeadm join' {{ base_dir }}/manifests/kube-init/kubeadm-init.log | grep -B 2 'control-plane'"
+    register: KUBE_MASTER_TOKEN_TMP
+
+  - name: 设置变量 KUBE_MASTER_TOKEN
+    set_fact: KUBE_MASTER_TOKEN={{ KUBE_MASTER_TOKEN_TMP.stdout }}
+  connection: local
+
+- name: node2 加入master 集群
+  shell: "{{ KUBE_MASTER_TOKEN }} | tee /etc/kubernetes/kubeadm-join.log"
+  when: "inventory_hostname in groups['kube-master'][1]"
+
+- name: node3 加入master 集群
+  shell: "{{ KUBE_MASTER_TOKEN }} | tee /etc/kubernetes/kubeadm-join.log"
+  when: "inventory_hostname in groups['kube-master'][2]"
+
+- name: 添加 kubectl 命令自动补全
+  lineinfile:
+    dest: ~/.bashrc
+    state: present
+    regexp: 'kubectl completion'
+    line: 'source <(kubectl completion bash)'
+
+- name: 本机拷贝kube 配置文件
+  shell: "rm -rf $HOME/.kube && /bin/mkdir $HOME/.kube && /bin/cp -i /etc/kubernetes/admin.conf $HOME/.kube/config && chown $(id -u):$(id -g) $HOME/.kube/config"
+
+- name: 清除所有master 污点
+  shell: kubectl taint nodes {{ hostname|quote }} node-role.kubernetes.io/master-
+
+- name: 设置master节点role
+  shell: "kubectl label node {{ hostname|quote }} kubernetes.io/role=master --overwrite"

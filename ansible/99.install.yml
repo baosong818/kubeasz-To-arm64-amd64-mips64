@@ -1,0 +1,90 @@
+# 配置节点互信，免密登陆
+- hosts: all
+  user: root
+  tasks:
+    - name: ssh-copy
+      authorized_key: user=root key="{{ lookup('file', '/root/.ssh/id_rsa.pub') }}"
+
+    - name: change name
+      raw: "echo {{ hostname|quote }} > /etc/hostname"
+
+    - name: set hostname
+      shell: "hostnamectl set-hostname {{ hostname|quote }}"
+
+# 选配：配置时间服务
+- hosts:
+  - kube-master
+  - kube-node
+  - ex-lb
+  - chrony
+  roles:
+  - { role: chrony, when: "groups['chrony']|length > 0" }
+
+# 节点初始化基础环境
+- hosts:
+  - kube-master
+  - kube-node
+  roles:
+  - prepare
+
+# 部署docker服务
+- hosts:
+  - kube-master
+  - kube-node
+  roles:
+  - docker
+  
+# 选配：部署keepalived+haproxy服务
+- hosts: ex-lb
+  roles:
+  - ex-lb
+
+# 初始化master节点
+- hosts: kube-master
+  roles:
+  - kube-init
+
+# 配置控制节点访问权限
+- hosts: localhost
+  tasks:
+    - name: 本机拷贝kube 配置文件
+      shell: "tar xf {{ base_dir }}/manifests/kube-init/pki.tar.gz -C {{ base_dir }}/manifests/kube-init/ && rm -rf $HOME/.kube && /bin/mkdir $HOME/.kube && /bin/cp -i /etc/ansible/manifests/kube-init/admin.conf $HOME/.kube/config && chown $(id -u):$(id -g) $HOME/.kube/config"
+
+    - name: 创建admin 用户访问权限
+      shell: "kubectl apply -f {{ base_dir }}/manifests/dashboard/admin-user-sa-rbac.yaml"
+
+# 将其他master加入集群
+- hosts: kube-master
+  roles:
+  - { role: kube-master, when: "inventory_hostname != groups['kube-master'][0]" }
+
+# 所有node节点加入集群
+- hosts: kube-node
+  roles:
+  - { role: kube-node, when: "inventory_hostname not in groups['kube-master']" }
+
+# 网络插件选配
+- hosts:
+  - kube-master
+  - kube-node
+  roles:
+  - { role: calico, when: "CLUSTER_NETWORK == 'calico'" }
+  - { role: flannel, when: "CLUSTER_NETWORK == 'flannel'" }
+
+# 集群插件选配
+- hosts:
+  - kube-node 
+  roles:
+  - cluster-addon
+  
+# helm部署
+- hosts: 
+  - kube-master
+  roles:
+  - helm
+
+# nfs存储部署  
+- hosts: kube-master
+  roles:
+  - cluster-storage
+  run_once: true

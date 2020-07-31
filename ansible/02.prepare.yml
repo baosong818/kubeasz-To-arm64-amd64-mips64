@@ -1,0 +1,15 @@
+# [optional] to synchronize system time of nodes with 'chrony' 
+- hosts:
+  - kube-master
+  - kube-node
+  - ex-lb
+  - chrony
+  roles:
+  - { role: chrony, when: "groups['chrony']|length > 0" }
+
+# prepare tasks for all nodes
+- hosts:
+  - kube-master
+  - kube-node
+  roles:
+  - prepare

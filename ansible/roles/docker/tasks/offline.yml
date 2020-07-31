@@ -1,0 +1,141 @@
+# 离线安装基础系统包
+- name: 准备离线安装包目录
+  file: name=/opt/kube/packages/docker state=directory
+
+- block:
+  - name: 分发 docker_juniper_ft_Kylin 离线包
+    copy:
+      src: "{{ base_dir }}/packages/docker_juniper_arm64.tar.gz"
+      dest: "/opt/kube/packages/docker/docker_juniper_arm64.tar.gz"
+
+  # 离线安装包可能需要安装多次才能成功
+  - name: 安装 docker_juniper_ft_Kylin 离线包
+    shell: 'cd /opt/kube/packages/docker && tar zxf docker_juniper_arm64.tar.gz && \
+           dpkg -i *.deb > /tmp/install_docker.log 2>&1'
+    register: install_info
+    until: not install_info.failed
+    retries: 3
+    delay: 1
+  when:
+  - 'ansible_distribution_major_version == "4"'
+  - 'ansible_distribution_release == "juniper"'
+  ignore_errors: true
+
+- block:
+  - name: 分发 docker_eagle_uso 离线包
+    copy:
+      src: "{{ base_dir }}/packages/docker_uos_arm64.tar.gz"
+      dest: "/opt/kube/packages/docker/docker_uos_arm64.tar.gz"
+
+  # 离线安装包可能需要安装多次才能成功
+  - name: 安装 docker_eagle_uos 离线包
+    shell: 'cd /opt/kube/packages/docker && tar zxf docker_uos_arm64.tar.gz && \
+           dpkg -i *.deb > /tmp/install_docker.log 2>&1'
+    register: install_info
+    until: not install_info.failed
+    retries: 3
+    delay: 1
+  when:
+  - 'ansible_distribution_major_version == "20"'
+  - 'ansible_distribution_release == "eagle"'
+  - 'ansible_architecture == "aarch64"'
+  ignore_errors: true
+
+- block:
+  - name: 分发 docker_xenial 离线包
+    copy:
+      src: "{{ base_dir }}/packages/docker_xenial.tar.gz"
+      dest: "/opt/kube/packages/docker/docker_xenial.tar.gz"
+
+  # 离线安装包可能需要安装多次才能成功
+  - name: 安装 docker_xenial 离线包
+    shell: 'cd /opt/kube/packages/docker && tar zxf docker_xenial.tar.gz && \
+           dpkg -i *.deb > /tmp/install_docker.log 2>&1'
+    register: install_info
+    until: not install_info.failed
+    retries: 3
+    delay: 1
+  when: ansible_distribution_release == "xenial"
+  ignore_errors: true
+
+- block:
+  - name: 分发 docker_bionic 离线包
+    copy:
+      src: "{{ base_dir }}/packages/docker_bionic.tar.gz"
+      dest: "/opt/kube/packages/docker/docker_bionic.tar.gz"
+
+  # 离线安装包可能需要安装多次才能成功
+  - name: 安装 docker_bionic 离线包
+    shell: 'cd /opt/kube/packages/docker && tar zxf docker_bionic.tar.gz && \
+           dpkg -i *.deb > /tmp/install_docker.log 2>&1'
+    register: install_info
+    until: not install_info.failed
+    retries: 3
+    delay: 1
+  when: ansible_distribution_release == "bionic"
+  ignore_errors: true
+
+- block:
+  - name: 分发 docker_centos7 离线包
+    copy:
+      src: "{{ base_dir }}/packages/docker_centos7.tar.gz"
+      dest: "/opt/kube/packages/docker/docker_centos7.tar.gz"
+
+  - name: 安装 docker_centos7 离线包
+    shell: 'cd /opt/kube/packages/docker && tar zxf docker_centos7.tar.gz && \
+           rpm -Uvh --force --nodeps *.rpm > /tmp/install_docker.log 2>&1'
+  when:
+  - 'ansible_distribution_major_version == "7"'
+  - 'ansible_distribution_release == "Core"'
+  - 'ansible_distribution == "CentOS"'
+  ignore_errors: true
+
+# 中标麒麟 CentOS7_arm64
+- block:
+  - name: 分发 docker_centos7_arm64 离线包
+    copy:
+      src: "{{ base_dir }}/packages/docker_centos7_arm64.tar.gz"
+      dest: "/opt/kube/packages/docker/docker_centos7_arm64.tar.gz"
+
+  - name: 安装 docker_centos7_arm64 离线包
+    shell: 'cd /opt/kube/packages/docker && tar zxf docker_centos7_arm64.tar.gz && \
+           rpm -Uvh --force --nodeps *.rpm > /tmp/install_docker.log 2>&1'
+  when:
+  - 'ansible_distribution_major_version == "7"'
+  - 'ansible_distribution_release in ["AltArch","Maipo"]'
+  - 'ansible_distribution in ["CentOS","RedHat"]'
+  ignore_errors: true
+
+- block:
+  - name: 分发 docker_stretch 离线包
+    copy:
+      src: "{{ base_dir }}/packages/docker_stretch.tar.gz"
+      dest: "/opt/kube/packages/docker/docker_stretch.tar.gz"
+
+  # 离线安装包可能需要安装多次才能成功
+  - name: 安装 docker_stretch 离线包
+    shell: 'cd /opt/kube/packages/docker && tar zxf docker_stretch.tar.gz && \
+           dpkg -i *.deb > /tmp/install_docker.log 2>&1'
+    register: install_info
+    until: not install_info.failed
+    retries: 3
+    delay: 1
+  when: ansible_distribution_release == "stretch"
+  ignore_errors: true
+
+- block:
+  - name: 分发 docker_buster 离线包
+    copy:
+      src: "{{ base_dir }}/packages/docker_buster.tar.gz"
+      dest: "/opt/kube/packages/docker/docker_buster.tar.gz"
+
+  # 离线安装包可能需要安装多次才能成功
+  - name: 安装 docker_buster 离线包
+    shell: 'cd /opt/kube/packages/docker && tar zxf docker_buster.tar.gz && \
+           dpkg -i *.deb > /tmp/install_docker.log 2>&1'
+    register: install_info
+    until: not install_info.failed
+    retries: 3
+    delay: 1
+  when: ansible_distribution_release == "buster"
+  ignore_errors: true

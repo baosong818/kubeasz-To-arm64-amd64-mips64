@@ -1,0 +1,33 @@
+# to clean 'kube' nodes
+- name: 重置kube 服务
+  shell: "echo y | kubeadm reset"
+  when: "inventory_hostname in groups['kube-master'] or inventory_hostname in groups['kube-node']"
+
+- name: 删除所有docker 镜像服务
+  shell: "docker rmi `docker images | grep -v REPOSITORY | awk '{print $3}'` --force"
+  ignore_errors: true
+  when: "inventory_hostname in groups['kube-master'] or inventory_hostname in groups['kube-node']"
+
+- name: stop and disable kube-master service
+  service: name={{ item }} state=stopped enabled=no
+  with_items:
+  - kubelet
+  - docker
+  - containerd
+  ignore_errors: true
+  when: "inventory_hostname in groups['kube-master'] or inventory_hostname in groups['kube-node']"
+
+- name: remove files and dirs of 'kube-master' nodes
+  file: name={{ item }} state=absent
+  with_items:
+  - "/root/.docker"
+  - "/root/.helm"
+  - "/root/.kube"
+  - "/etc/kubernetes"
+  - "/var/lib/etcd"
+  when: "inventory_hostname in groups['kube-master'] or inventory_hostname in groups['kube-node']"
+
+- name: clean iptables
+  shell: iptables -F && iptables -t nat -F && iptables -t mangle -F && iptables -X && ipvsadm --clear
+  ignore_errors: true
+  when: "inventory_hostname in groups['kube-master'] or inventory_hostname in groups['kube-node']"

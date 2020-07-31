@@ -1,0 +1,122 @@
+- name: 下载helm客户端（amd64）
+  copy: src={{ base_dir }}/bin_amd64/helm dest=/usr/local/bin/helm mode=0755
+  when: ansible_architecture == "x86_64"
+
+- name: 下载helm客户端（arm64）
+  copy: src={{ base_dir }}/bin_arm64/helm dest=/usr/local/bin/helm mode=0755
+  when: ansible_architecture == "aarch64"
+
+- name: 下载helm客户端（mips64）
+  copy: src={{ base_dir }}/bin_mips64/helm dest=/usr/local/bin/helm mode=0755
+  when: ansible_architecture == "mips64"
+
+- block:
+  - name: 获取当前集群所有 namespaces
+    shell: "kubectl get ns"
+    register: current_ns
+
+  - name: 准备rbac配置
+    template: src=helm-rbac.yaml.j2 dest={{ base_dir }}/manifests/helm/helm-rbac.yaml
+
+  - name: 在k8s上创建rbac
+    shell: "kubectl apply -f {{ base_dir }}/manifests/helm/helm-rbac.yaml"
+
+  - name: 生成 tiller 服务端证书		
+    shell: "cd {{ base_dir }}/manifests/kube-init/pki && \
+            openssl genrsa -out tiller.key 4096 && \
+            openssl req -key tiller.key -new -sha256 -subj '/CN={{ Service_Domain }}' -out tiller.csr && \
+            openssl x509 -req -CA ca.crt -CAkey ca.key -CAcreateserial -in tiller.csr -out tiller.crt -days 3650"
+  ignore_errors: true
+  run_once: true
+  connection: local
+
+- name: 创建helm 证书目录
+  file: name={{ item }} state=directory
+  with_items:
+  - "{{ k8s_dir }}/pki/helm"
+  - "/root/.helm"
+
+- name: 配置helm 客户端 ca证书
+  copy: src={{ base_dir }}/manifests/kube-init/pki/{{ item }} dest=/root/.helm/{{ item }}
+  with_items:
+  - "ca.crt"
+  - "ca.key"
+
+- name: 配置helm 客户端 ca证书
+  copy: src={{ base_dir }}/manifests/kube-init/pki/{{ item }} dest=/root/.helm/{{ item }}
+  with_items:
+  - "tiller.crt"
+  - "tiller.key"
+
+- name: 生成 helm 客户端证书
+  shell: "cd /root/.helm && \
+          openssl genrsa -out key.pem 4096 && \
+          openssl req -key key.pem -new -sha256 -subj '/CN={{ Service_Domain }}' -out helm.csr && \
+          openssl x509 -req -CA ca.crt -CAkey ca.key -CAcreateserial -in helm.csr -out cert.pem -days 3650"
+
+- name: 安装tiller
+  shell: "helm init \
+         --service-account tiller \
+         --tiller-tls \
+         --tiller-tls-verify \
+         --tls-ca-cert /root/.helm/ca.crt \
+         --tiller-tls-cert /root/.helm/tiller.crt \
+         --tiller-tls-key /root/.helm/tiller.key \
+         --tiller-image {{ tiller_image }} \
+         --tiller-namespace {{ helm_namespace }} \
+         --stable-repo-url {{ repo_url }} \
+         --upgrade"
+  run_once: true
+
+- name: 删除无用证书
+  shell: "rm -f /root/.helm/ca.srl /root/.helm/ca.key /root/.helm/helm.csr /root/.helm/tiller.crt /root/.helm/tiller.key"
+
+- name: 添加 helm 命令自动补全
+  lineinfile:
+    dest: ~/.bashrc
+    state: present
+    regexp: 'helm completion'
+    line: 'source <(helm completion bash)'
+
+# 为方便与tiller进行安全通信，启用helm tls环境变量；仅支持helm v2.11.0及以上版本
+- name: 配置helm tls环境变量
+  lineinfile:
+    dest: ~/.bashrc
+    state: present
+    regexp: "helm tls environment"
+    line: "export HELM_TLS_ENABLE=true"
+
+- block:
+  - name: 透传 tiller NodePort 服务
+    shell: "kubectl apply -f {{ base_dir }}/manifests/helm/tiller-service.yaml"
+    ignore_errors: true
+
+  # 等待Tiller 插件部署成功，视下载镜像速度而定
+  - name: 轮询等待tiller 运行，视下载镜像速度而定
+    shell: "kubectl get pod -n kube-system -o wide|grep 'tiller'|awk '{print $3}'"
+    register: pod_status
+    until: pod_status.stdout == "Running"
+    retries: 20
+    delay: 20
+  run_once: true
+  connection: local
+
+- block:
+    - name: 尝试推送离线 prometheus-operator 目录
+      copy: src={{ base_dir }}/packages/prometheus-operator.tar.gz dest=/opt/prometheus-operator.tar.gz
+
+    - name: 获取 prometheus-operator 离线推送情况
+      command: "ls /opt/"
+      register: file_info
+
+    - name: 解压 prometheus-operator
+      shell: "cd /opt && tar xf prometheus-operator.tar.gz"
+      when: '"prometheus-operator.tar.gz" in file_info.stdout'
+
+    - name: 创建 prometheus-operator 部署
+      shell: "cd /opt/prometheus-operator && \
+              helm install --name prometheus-operator --namespace=monitoring -f prometheus-operator/values.yaml prometheus-operator && \
+              rm -rf /opt/prometheus-operator /opt/prometheus-operator.tar.gz"
+  when: 'prometheus_install == "yes"'
+  ignore_errors: true
+  run_once: true

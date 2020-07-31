@@ -1,0 +1,38 @@
+- name: 创建 dashboard部署
+  shell: "kubectl apply -f {{ base_dir }}/manifests/dashboard/kubernetes-dashboard.yaml"
+  run_once: true
+  connection: local
+  when: 'dashboard_install == "yes"'
+  ignore_errors: true
+
+- block:
+  - name: 生成 dashboard 相关 kubernetes-dashboard-ingress
+    template: src={{ item }}.j2 dest={{ base_dir }}/manifests/ingress/traefik/tls/{{ item }}
+    with_items:
+    - "k8s-dashboard.ing.yaml"
+
+  - name: 生成 dashboard 相关 tls 密钥
+    shell: "openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout {{ base_dir }}/manifests/dashboard/tls.key -out {{ base_dir }}/manifests/dashboard/tls.crt -subj '/CN=${Dashboard_Domain}' && \
+            kubectl -n kube-system create secret tls traefik-cert --key={{ base_dir }}/manifests/dashboard/tls.key --cert={{ base_dir }}/manifests/dashboard/tls.crt"
+
+  - name: 创建 dashboard tls部署
+    shell: "kubectl apply -f {{ base_dir }}/manifests/ingress/traefik/tls/k8s-dashboard.ing.yaml"
+  when: 'dashboard_install == "yes" and ingress_install == "yes"'
+  run_once: true
+  connection: local
+  ignore_errors: true
+
+- name: 创建 traefik部署
+  shell: "kubectl apply -f {{ base_dir }}/manifests/ingress/traefik/traefik-ingress.yaml && \
+          kubectl apply -f {{ base_dir }}/manifests/ingress/traefik/tls/traefik-controller.yaml"
+  connection: local
+  run_once: true
+  when: 'ingress_backend == "traefik" and ingress_install == "yes"'
+  ignore_errors: true
+
+- name: 创建 nginx_ingress部署
+  shell: "kubectl apply -f {{ base_dir }}/manifests/ingress/nginx-ingress/nginx-ingress.yaml"
+  connection: local
+  run_once: true
+  when: 'ingress_backend == "nginx-ingress" and ingress_install == "yes"'
+  ignore_errors: true

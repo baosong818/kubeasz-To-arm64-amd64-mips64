@@ -1,0 +1,13 @@
+#!/bin/bash
+echo "        ######################################"
+echo "        ##    晋商博创(北京)科技有限公司    ##"
+echo "        ##        JS Bochtec Co.,Ltd.       ##"
+echo "######################################################"
+echo "##    --                                            ##"
+echo "##   ----       自  主  可  控  云  平  台          ##"
+echo "##    /   Independent Controllable Cloud Platform   ##"
+echo "##   ----                                           ##"
+echo "######################################################"
+
+# 一键卸载
+ansible-playbook 98.clean.yml | tee /tmp/clean.log 2>&1

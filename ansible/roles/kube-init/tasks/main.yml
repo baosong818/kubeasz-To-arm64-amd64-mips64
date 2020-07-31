@@ -1,0 +1,70 @@
+- name: 添加K8S 仓库
+  template: src=kubernetes.repo dest=/etc/yum.repos.d/kubernetes.repo
+  when: 'INSTALL_SOURCE != "offline"'
+
+- name: 安装K8S 软件包
+  yum: 
+    name: 
+      - kubeadm-1.15.12
+      - kubectl-1.15.12
+      - kubelet-1.15.12
+    state: present
+  when: 'INSTALL_SOURCE != "offline"'
+
+# 离线安装K8S 软件包
+- import_tasks: offline.yml
+  when: 'INSTALL_SOURCE == "offline"'
+
+- name: enable kubelet 服务
+  shell: systemctl enable kubelet
+  ignore_errors: true
+
+- name: 添加 kubectl 命令自动补全
+  lineinfile:
+    dest: ~/.bashrc
+    state: present
+    regexp: 'kubectl completion'
+    line: 'source <(kubectl completion bash)'
+
+- name: 创建kubernetes 证书备份目录
+  file: name={{ item }} state=directory
+  with_items:
+  - "{{ base_dir }}/manifests/kube-init"
+  connection: local
+  run_once: true
+
+- block:
+  - name: 创建kubernetes 证书目录
+    file: name={{ item }} state=directory
+    with_items:
+    - "{{ k8s_dir }}"
+
+  - name: 分发初始化配置文件
+    template: src=kubeadm-config.yaml.j2 dest=/etc/kubernetes/kubeadm-config.yaml
+
+  - name: 初始化master 节点
+    shell: "kubeadm init --config=/etc/kubernetes/kubeadm-config.yaml --upload-certs | tee /etc/kubernetes/kubeadm-init.log"
+
+  - name: 本机拷贝kube 配置文件
+    shell: "rm -rf $HOME/.kube && /bin/mkdir $HOME/.kube && /bin/cp -i /etc/kubernetes/admin.conf $HOME/.kube/config && chown $(id -u):$(id -g) $HOME/.kube/config"
+
+  - name: 清除master 污点
+    shell: "kubectl taint nodes {{ hostname|quote }} node-role.kubernetes.io/master-"
+
+  - name: 设置master节点role
+    shell: "kubectl label node {{ hostname|quote }} kubernetes.io/role=master --overwrite"
+
+  - name: 打包kube 配置文件
+    shell: "cd {{ k8s_dir }} && tar cf pki.tar.gz pki/ca.* pki/sa.* pki/front* pki/etcd/ca.*"
+
+  - name: 回传kube 配置文件
+    fetch:
+      src: "{{ k8s_dir }}/{{ item }}"
+      dest: "{{ base_dir }}/manifests/kube-init/{{ item }}"
+      flat: yes
+    with_items:
+    - "admin.conf"
+    - "pki.tar.gz"
+    - "kubeadm-init.log"
+
+  when: "inventory_hostname == groups['kube-master'][0]"

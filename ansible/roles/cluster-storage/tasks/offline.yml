@@ -1,0 +1,141 @@
+# 离线安装NFS系统包
+- name: 准备离线安装包目录
+  file: name=/opt/kube/packages/nfs state=directory
+
+- block:
+  - name: 分发 nfs_juniper_ft_Kylin 离线包
+    copy:
+      src: "{{ base_dir }}/packages/nfs_juniper_arm64.tar.gz"
+      dest: "/opt/kube/packages/nfs/nfs_juniper_arm64.tar.gz"
+
+  # 离线安装包可能需要安装多次才能成功
+  - name: 安装 nfs_juniper_ft_Kylin 离线包
+    shell: 'cd /opt/kube/packages/nfs && tar zxf nfs_juniper_arm64.tar.gz && \
+           dpkg -i *.deb > /tmp/install_nfs.log 2>&1'
+    register: install_info
+    until: not install_info.failed
+    retries: 3
+    delay: 1
+  when:
+  - 'ansible_distribution_major_version == "4"'
+  - 'ansible_distribution_release == "juniper"'
+  ignore_errors: true
+
+- block:
+  - name: 分发 nfs_eagle_uso 离线包
+    copy:
+      src: "{{ base_dir }}/packages/nfs_uos_arm64.tar.gz"
+      dest: "/opt/kube/packages/nfs/nfs_uos_arm64.tar.gz"
+
+  # 离线安装包可能需要安装多次才能成功
+  - name: 安装 nfs_eagle_uos 离线包
+    shell: 'cd /opt/kube/packages/nfs && tar zxf nfs_uos_arm64.tar.gz && \
+           dpkg -i *.deb > /tmp/install_nfs.log 2>&1'
+    register: install_info
+    until: not install_info.failed
+    retries: 3
+    delay: 1
+  when:
+  - 'ansible_distribution_major_version == "20"'
+  - 'ansible_distribution_release == "eagle"'
+  - 'ansible_architecture == "aarch64"'
+  ignore_errors: true
+
+- block:
+  - name: 分发 nfs_xenial 离线包
+    copy:
+      src: "{{ base_dir }}/packages/nfs_xenial.tar.gz"
+      dest: "/opt/kube/packages/nfs/nfs_xenial.tar.gz"
+
+  # 离线安装包可能需要安装多次才能成功
+  - name: 安装 nfs_xenial 离线包
+    shell: 'cd /opt/kube/packages/nfs && tar zxf nfs_xenial.tar.gz && \
+           dpkg -i *.deb > /tmp/install_nfs.log 2>&1'
+    register: install_info
+    until: not install_info.failed
+    retries: 3
+    delay: 1
+  when: ansible_distribution_release == "xenial"
+  ignore_errors: true
+
+- block:
+  - name: 分发 nfs_bionic 离线包
+    copy:
+      src: "{{ base_dir }}/packages/nfs_bionic.tar.gz"
+      dest: "/opt/kube/packages/nfs/nfs_bionic.tar.gz"
+
+  # 离线安装包可能需要安装多次才能成功
+  - name: 安装 nfs_bionic 离线包
+    shell: 'cd /opt/kube/packages/nfs && tar zxf nfs_bionic.tar.gz && \
+           dpkg -i *.deb > /tmp/install_nfs.log 2>&1'
+    register: install_info
+    until: not install_info.failed
+    retries: 3
+    delay: 1
+  when: ansible_distribution_release == "bionic"
+  ignore_errors: true
+
+- block:
+  - name: 分发 nfs_centos7 离线包
+    copy:
+      src: "{{ base_dir }}/packages/nfs_centos7.tar.gz"
+      dest: "/opt/kube/packages/nfs/nfs_centos7.tar.gz"
+
+  - name: 安装 nfs_centos7 离线包
+    shell: 'cd /opt/kube/packages/nfs && tar zxf nfs_centos7.tar.gz && \
+           rpm -Uvh --force --nodeps *.rpm > /tmp/install_nfs.log 2>&1'
+  when:
+  - 'ansible_distribution_major_version == "7"'
+  - 'ansible_distribution_release == "Core"'
+  - 'ansible_distribution == "CentOS"'
+  ignore_errors: true
+
+# 中标麒麟 And CentOS7_arm64
+- block:
+  - name: 分发 nfs_centos7_arm64 离线包
+    copy:
+      src: "{{ base_dir }}/packages/nfs_centos7_arm64.tar.gz"
+      dest: "/opt/kube/packages/nfs/nfs_centos7_arm64.tar.gz"
+
+  - name: 安装 nfs_centos7_arm64 离线包
+    shell: 'cd /opt/kube/packages/nfs && tar zxf nfs_centos7_arm64.tar.gz && \
+           rpm -Uvh --force --nodeps *.rpm > /tmp/install_nfs.log 2>&1'
+  when:
+  - 'ansible_distribution_major_version == "7"'
+  - 'ansible_distribution_release in ["AltArch","Maipo"]'
+  - 'ansible_distribution in ["CentOS","RedHat"]'
+  ignore_errors: true
+
+- block:
+  - name: 分发 nfs_stretch 离线包
+    copy:
+      src: "{{ base_dir }}/packages/nfs_stretch.tar.gz"
+      dest: "/opt/kube/packages/nfs/nfs_stretch.tar.gz"
+
+  # 离线安装包可能需要安装多次才能成功
+  - name: 安装 nfs_stretch 离线包
+    shell: 'cd /opt/kube/packages/nfs && tar zxf nfs_stretch.tar.gz && \
+           dpkg -i *.deb > /tmp/install_nfs.log 2>&1'
+    register: install_info
+    until: not install_info.failed
+    retries: 3
+    delay: 1
+  when: ansible_distribution_release == "stretch"
+  ignore_errors: true
+
+- block:
+  - name: 分发 nfs_buster 离线包
+    copy:
+      src: "{{ base_dir }}/packages/nfs_buster.tar.gz"
+      dest: "/opt/kube/packages/nfs/nfs_buster.tar.gz"
+
+  # 离线安装包可能需要安装多次才能成功
+  - name: 安装 nfs_buster 离线包
+    shell: 'cd /opt/kube/packages/nfs && tar zxf nfs_buster.tar.gz && \
+           dpkg -i *.deb > /tmp/install_nfs.log 2>&1'
+    register: install_info
+    until: not install_info.failed
+    retries: 3
+    delay: 1
+  when: ansible_distribution_release == "buster"
+  ignore_errors: true
