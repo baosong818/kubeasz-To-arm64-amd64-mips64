@@ -41,6 +41,9 @@
 # ex-lb EX_APISERVER_VIP
 EX_APISERVER_VIP=192.168.20.40
 
+# dnsmasq host
+Dnsmasq=192.168.20.19
+
 # Harbor Url
 Image_Repo="harbor.bochtec.com/k8s115"
 
