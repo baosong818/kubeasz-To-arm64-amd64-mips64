@@ -2,12 +2,17 @@
   apt: update_cache=yes cache_valid_time=72000
   ignore_errors: true
   when: 
-  - 'ansible_distribution in ["Ubuntu","Debian","Kylin","uos"]'
+  - 'ansible_distribution in ["Ubuntu","Debian","Kylin","uos","uos 20"]'
   - 'INSTALL_SOURCE != "offline"'
+
+- name: apt 卸载无用包
+  shell: 'apt --fix-broken install -y && apt autoremove -y'
+  when: 'ansible_distribution in ["Ubuntu","Debian","Kylin","uos","uos 20"]'
+  ignore_errors: true
 
 - name: apt 卸载 ntp
   shell: 'apt remove -y ntp'
-  when: 'ansible_distribution in ["Ubuntu","Debian","Kylin","uos"]'
+  when: 'ansible_distribution in ["Ubuntu","Debian","Kylin","uos","uos 20"]'
   ignore_errors: true
 
 - name: yum 卸载 ntp
@@ -32,7 +37,7 @@
 
   - name: 配置 chrony server
     template: src=server-ubuntu.conf.j2 dest=/etc/chrony/chrony.conf
-    when: 'ansible_distribution in ["Ubuntu","Debian","Kylin","uos"]'
+    when: 'ansible_distribution in ["Ubuntu","Debian","Kylin","uos","uos 20"]'
 
   - name: 启动 chrony server
     service: name=chronyd state=restarted enabled=yes
@@ -40,7 +45,7 @@
 
   - name: 启动 chrony server
     service: name=chrony state=restarted enabled=yes
-    when: 'ansible_distribution in ["Ubuntu","Debian","Kylin","uos"]'
+    when: 'ansible_distribution in ["Ubuntu","Debian","Kylin","uos","uos 20"]'
   when: 'inventory_hostname == groups.chrony[0]'
 
 - block:
@@ -50,7 +55,7 @@
 
   - name: 配置 chrony client
     template: src=client-ubuntu.conf.j2 dest=/etc/chrony/chrony.conf
-    when: 'ansible_distribution in ["Ubuntu","Debian","Kylin","uos"]'
+    when: 'ansible_distribution in ["Ubuntu","Debian","Kylin","uos","uos 20"]'
 
   - name: 启动 chrony client 
     service: name=chronyd state=restarted enabled=yes
@@ -58,5 +63,5 @@
 
   - name: 启动 chrony client
     service: name=chrony state=restarted enabled=yes
-    when: 'ansible_distribution in ["Ubuntu","Debian","Kylin","uos"]'
+    when: 'ansible_distribution in ["Ubuntu","Debian","Kylin","uos","uos 20"]'
   when: 'inventory_hostname != groups.chrony[0]'

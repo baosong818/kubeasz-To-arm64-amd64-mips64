@@ -388,6 +388,7 @@ rules:
       - networksets
       - clusterinformations
       - hostendpoints
+      - blockaffinities
     verbs:
       - get
       - list
@@ -515,7 +516,7 @@ spec:
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
         - name: upgrade-ipam
-          image: harbor.bochtec.com/k8s-base/cni:v3.8.9
+          image: harbor.bochtec.com/k8s-base/cni:v3.9.6
           command: ["/opt/cni/bin/calico-ipam", "-upgrade"]
           env:
             - name: KUBERNETES_NODE_NAME
@@ -532,12 +533,10 @@ spec:
               name: host-local-net-dir
             - mountPath: /host/opt/cni/bin
               name: cni-bin-dir
-          securityContext:
-            privileged: true
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: harbor.bochtec.com/k8s-base/cni:v3.8.9
+          image: harbor.bochtec.com/k8s-base/cni:v3.9.6
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -568,23 +567,19 @@ spec:
               name: cni-bin-dir
             - mountPath: /host/etc/cni/net.d
               name: cni-net-dir
-          securityContext:
-            privileged: true
         # Adds a Flex Volume Driver that creates a per-pod Unix Domain Socket to allow Dikastes
         # to communicate with Felix over the Policy Sync API.
         - name: flexvol-driver
-          image: harbor.bochtec.com/k8s-base/pod2daemon-flexvol:v3.8.9
+          image: harbor.bochtec.com/k8s-base/pod2daemon-flexvol:v3.9.6
           volumeMounts:
           - name: flexvol-driver-host
             mountPath: /host/driver
-          securityContext:
-            privileged: true
       containers:
         # Runs calico-node container on each Kubernetes node.  This
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: harbor.bochtec.com/k8s-base/node:v3.8.9
+          image: harbor.bochtec.com/k8s-base/node:v3.9.6
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -645,9 +640,9 @@ spec:
           livenessProbe:
             exec:
               command:
-                - /bin/calico-node
-                - -felix-live
-                - -bird-live
+              - /bin/calico-node
+              - -felix-live
+              - -bird-live
             periodSeconds: 10
             initialDelaySeconds: 10
             failureThreshold: 6
@@ -655,8 +650,8 @@ spec:
             exec:
               command:
               - /bin/calico-node
-              - -bird-ready
               - -felix-ready
+              - -bird-ready
             periodSeconds: 10
           volumeMounts:
             - mountPath: /lib/modules
@@ -759,7 +754,7 @@ spec:
       priorityClassName: system-cluster-critical
       containers:
         - name: calico-kube-controllers
-          image: harbor.bochtec.com/k8s-base/kube-controllers:v3.8.9
+          image: harbor.bochtec.com/k8s-base/kube-controllers:v3.9.6
           env:
             # Choose which controllers to run.
             - name: ENABLED_CONTROLLERS

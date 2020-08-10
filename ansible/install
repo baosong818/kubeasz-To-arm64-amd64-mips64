@@ -9,8 +9,20 @@ echo "##    /   Independent Controllable Cloud Platform   ##"
 echo "##   ----                                           ##"
 echo "######################################################"
 
-# 生成免密文件
-echo y | ssh-keygen -t rsa -b 2048 -N '' -f /root/.ssh/id_rsa > /dev/null 2>&1
-
 # 一键自动部署
 ansible-playbook 99.install.yml | tee /tmp/install.log 2>&1
+
+# 打印部署结果
+echo "后台域名"
+echo `grep "Service_Domain" hosts | awk -F '"' '{print $2}'`
+echo ""
+echo "前台域名"
+echo `grep "Static_Domain" hosts | awk -F '"' '{print $2}'`
+if [[ $(grep dashboard_install roles/cluster-addon/defaults/main.yml ) == 'dashboard_install: "yes"' ]]; then
+echo ""
+echo "Dashboard域名"
+echo `grep dashboardDomain roles/cluster-addon/defaults/main.yml | awk -F '"' '{print $2}'`
+echo ""
+echo "Dashboard Token"
+echo `kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep admin-user | awk '{print $1}') | awk '/token:/ {print $2}'`
+fi

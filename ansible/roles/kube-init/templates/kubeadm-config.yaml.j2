@@ -34,7 +34,9 @@ apiServer:
 apiVersion: kubeadm.k8s.io/v1beta2
 certificatesDir: /etc/kubernetes/pki
 clusterName: kubernetes
-controllerManager: {}
+controllerManager:
+  extraArgs:
+    bind-address: 0.0.0.0
 {% if groups['ex-lb']|length > 0 %}
 controlPlaneEndpoint: "{{ EX_APISERVER_VIP }}:{{ EX_APISERVER_PORT }}"
 {% endif %}
@@ -52,8 +54,13 @@ networking:
   dnsDomain: cluster.local
   serviceSubnet: {{ SERVICE_CIDR }}
   podSubnet: {{ CLUSTER_CIDR }}
-scheduler: {}
+scheduler:
+  extraArgs:
+    bind-address: 0.0.0.0
 ---
 apiVersion: kubeproxy.config.k8s.io/v1alpha1
 kind: KubeProxyConfiguration
 metricsBindAddress: 0.0.0.0:10249
+{% if PROXY_MODE == "ipvs" %}
+mode: ipvs
+{% endif %}

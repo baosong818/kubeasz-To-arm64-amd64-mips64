@@ -26,5 +26,3 @@ calico_ver_main: "{{ calico_ver.split('.')[0] }}.{{ calico_ver.split('.')[1] }}"
 
 # 离线镜像tar包
 calico_offline: "calico_{{ calico_ver }}.tar"
-
-Dashboard_Domain: "{{ Dashboard_Domain }}"

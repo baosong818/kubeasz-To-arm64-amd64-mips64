@@ -3,7 +3,8 @@
   register: containerd_status
 
 - name: fail info1
-  fail: msg="Containerd already installed!"
+#  fail: msg="Containerd already installed!"
+  shell: 'systemctl stop containerd'
   when: '"running" in containerd_status.stdout'
 
 - name: 添加Docker-ce 仓库
@@ -47,4 +48,4 @@
   tags: upgrade_docker
 
 - name: 认证登陆
-  shell: "docker login -u bochtec -p Passw0rd https://harbor.bochtec.com"
+  shell: "docker login -u upload -p Passw0rd https://harbor.bochtec.com"

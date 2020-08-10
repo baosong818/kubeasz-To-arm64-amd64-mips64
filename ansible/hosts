@@ -1,70 +1,54 @@
-# all
+# 将所有服务器按照下表方式详细填写完毕
 [all]
-192.168.20.41 hostname=node1 ansible_ssh_host=192.168.20.41 ansible_ssh_user="root" ansible_ssh_pass="100trust"
-192.168.20.46 hostname=node2 ansible_ssh_host=192.168.20.46 ansible_ssh_user="root" ansible_ssh_pass="100trust"
-192.168.19.46 hostname=node3 ansible_ssh_host=192.168.19.46 ansible_ssh_user="root" ansible_ssh_pass="passw0rd"
+192.168.20.34 hostname=node1 ansible_ssh_host=192.168.20.34 ansible_ssh_user="root" ansible_ssh_pass="123123"
+192.168.20.35 hostname=node2 ansible_ssh_host=192.168.20.35 ansible_ssh_user="root" ansible_ssh_pass="123123"
+192.168.20.36 hostname=node3 ansible_ssh_host=192.168.20.36 ansible_ssh_user="root" ansible_ssh_pass="123123"
 
-# 'etcd' cluster should have odd member(s) (1,3,5,...)
-# variable 'NODE_NAME' is the distinct name of a member in 'etcd' cluster
-#[etcd]
-#192.168.20.41
-
-# master node(s)
+# 所有master节点按下表填写完毕，默认etcd部署在master节点，所以推荐是奇数（1..3..5）
 [kube-master]
-192.168.20.41 NODE_NAME=node1
-192.168.20.46 NODE_NAME=node2
-192.168.19.46 NODE_NAME=node3
+192.168.20.34 NODE_NAME=node1
+192.168.20.35 NODE_NAME=node2
+192.168.20.36 NODE_NAME=node3
 
-# work node(s)
+# 所有node节点按下表填写完毕，无特殊需求master节点也在node里面
 [kube-node]
-192.168.20.41
-192.168.20.46
-192.168.19.46
-
-# [optional] harbor server, a private docker registry
-# 'NEW_INSTALL': 'yes' to install a harbor server; 'no' to integrate with existed one
-# 'SELF_SIGNED_CERT': 'no' you need put files of certificates named harbor.pem and harbor-key.pem in directory 'down'
-[harbor]
-#192.168.1.8 HARBOR_DOMAIN="harbor.yourdomain.com" NEW_INSTALL=no SELF_SIGNED_CERT=yes
+192.168.20.34
+192.168.20.35
 192.168.20.36
 
-# [optional] loadbalance for accessing k8s from outside
+# Harbor容器仓库服务器搭建地址，默认使用harbor.bochtec.com访问 
+[harbor]
+#192.168.20.36 HARBOR_DOMAIN="harbor.bochtec.com" NEW_INSTALL=no SELF_SIGNED_CERT=yes
+192.168.20.36
+
+# keepalived haproxy 高可用部署
+# LB_ROLE 服务器角色（主、备）
+# EX_APISERVER_VIP 高可用VIP地址
+# EX_APISERVER_PORT 高可用PORT端口
 [ex-lb]
-192.168.20.41 LB_ROLE=master EX_APISERVER_VIP=192.168.20.40 EX_APISERVER_PORT=8443
-192.168.20.46 LB_ROLE=backup EX_APISERVER_VIP=192.168.20.40 EX_APISERVER_PORT=8443
+192.168.20.34 LB_ROLE=master EX_APISERVER_VIP=192.168.20.40 EX_APISERVER_PORT=8443
+192.168.20.35 LB_ROLE=backup EX_APISERVER_VIP=192.168.20.40 EX_APISERVER_PORT=8443
 
-# [optional] ntp server for the cluster
+# 时间同步
 [chrony]
-192.168.19.46
+192.168.20.36
 
+# 全局变量
 [all:vars]
-# --------- Main Variables ---------------
-# ex-lb EX_APISERVER_VIP
+# 如果采用高可用模式，需要将上述【ex-lb】中的EX_APISERVER_VIP重复标记下
 EX_APISERVER_VIP=192.168.20.40
 
-# dnsmasq host
+# Dnsmasq服务器地址，harbor需要dns解析才可使用
 Dnsmasq=192.168.20.19
 
-# Harbor Url
+# Harbor仓库地址，采用kubeadm v1.15.12版本
 Image_Repo="harbor.bochtec.com/k8s115"
 
-# Domain Name
-Service_Domain="api.iccp.test1.com"
-Static_Domain="iccp.test1.com"
-Dashboard_Domain="dashboard.test1.com"
-
-# Mysql
-ICCP_DB="iccp"
-ICCP_USER="iccp"
-ICCP_PASS="iccp123"
-
-# Cluster container-runtime supported: docker, containerd
-CONTAINER_RUNTIME="docker"
-
-# Network plugins supported: calico, flannel, kube-router, cilium, kube-ovn
+# -------------- 下述变量不推荐更改 ---------------------
+# K8S网络插件，支持calico、flannel
 CLUSTER_NETWORK="calico"
 
-# Service proxy mode of kube-proxy: 'iptables' or 'ipvs'
+# Kube_proxy 代理模式，'iptables' or 'ipvs'
 PROXY_MODE="iptables"
 
 # K8S Service CIDR, not overlap with node(host) networking
@@ -73,10 +57,7 @@ SERVICE_CIDR="10.68.0.0/16"
 # Cluster CIDR (Pod CIDR), not overlap with node(host) networking
 CLUSTER_CIDR="172.20.0.0/16"
 
-# Cluster DNS Domain
-CLUSTER_DNS_DOMAIN="cluster.local."
-
-# -------- Additional Variables (don't change the default value right now) ---
+# -------------- 下述变量不能更改 ---------------------
 # K8s Directory
 k8s_dir="/etc/kubernetes"
 

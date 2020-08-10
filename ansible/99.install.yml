@@ -5,11 +5,25 @@
     - name: ssh-copy
       authorized_key: user=root key="{{ lookup('file', '/root/.ssh/id_rsa.pub') }}"
 
+    - name: change resolv
+      blockinfile:
+        path: /etc/resolv.conf
+        block: |
+          nameserver {{ Dnsmasq|quote }}
+
     - name: change name
       raw: "echo {{ hostname|quote }} > /etc/hostname"
 
     - name: set hostname
       shell: "hostnamectl set-hostname {{ hostname|quote }}"
+
+    - name: "add the line to the tail of the file"
+      blockinfile:
+        path: /etc/hosts
+        block: |
+          {{ item.name }}
+      with_items:
+        - { name: "{% for node in groups['all'] %}{{ hostvars[node]['ansible_ssh_host'] }}   {{ hostvars[node]['hostname'] }}\n{% endfor %}" }
 
 # 选配：配置时间服务
 - hosts:
@@ -87,4 +101,11 @@
 - hosts: kube-master
   roles:
   - cluster-storage
+  run_once: true
+
+# iccp部署
+- hosts: kube-master
+  roles:
+  - iccp
+  connection: local
   run_once: true

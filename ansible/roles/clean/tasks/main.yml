@@ -16,7 +16,6 @@
   with_items:
   - 'helm completion'
   - 'kubectl completion'
-  - 'crictl completion'
   - 'HELM_TLS_ENABLE'
   when: 'DEL_ENV == "yes"'
 

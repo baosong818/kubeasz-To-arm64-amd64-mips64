@@ -26,7 +26,7 @@ listen kube-master
 
 {% if INGRESS_NODEPORT_LB == "yes" %}
 listen tiller
-        bind 0.0.0.0:32134
+        bind 0.0.0.0:44134
         mode tcp
         option tcplog
         option dontlognull
@@ -45,7 +45,7 @@ listen tiller
 
 {% if INGRESS_NODEPORT_LB == "yes" %}
 listen prometheus
-        bind 0.0.0.0:30090
+        bind 0.0.0.0:40090
         mode tcp
         option tcplog
         option dontlognull
@@ -64,7 +64,7 @@ listen prometheus
 
 {% if INGRESS_NODEPORT_LB == "yes" %}
 listen alertmanager
-        bind 0.0.0.0:30903
+        bind 0.0.0.0:40903
         mode tcp
         option tcplog
         option dontlognull

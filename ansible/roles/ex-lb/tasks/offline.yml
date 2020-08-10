@@ -26,8 +26,8 @@
     shell: 'cd /opt/kube/packages/haproxy && tar zxf haproxy_uos_arm64.tar.gz && \
            dpkg -i *.deb > /tmp/install_haproxy.log 2>&1'
   when:
-  - 'ansible_distribution_major_version == "20"'
-  - 'ansible_distribution_release == "eagle"'
+  - 'ansible_distribution_major_version in ["20","\"20\""]'
+  - 'ansible_distribution_release in ["eagle","\"20\""]'
   - 'ansible_architecture == "aarch64"'
   ignore_errors: true
 
@@ -138,8 +138,8 @@
     shell: 'cd /opt/kube/packages/keepalived && tar zxf keepalived_uos_arm64.tar.gz && \
            dpkg -i *.deb > /tmp/install_keepalived.log 2>&1'
   when:
-  - 'ansible_distribution_major_version == "20"'
-  - 'ansible_distribution_release == "eagle"'
+  - 'ansible_distribution_major_version in ["20","\"20\""]'
+  - 'ansible_distribution_release in ["eagle","\"20\""]'
   - 'ansible_architecture == "aarch64"'
   ignore_errors: true
 

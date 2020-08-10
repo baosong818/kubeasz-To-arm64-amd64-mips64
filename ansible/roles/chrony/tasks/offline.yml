@@ -28,8 +28,8 @@
     shell: 'cd /opt/kube/packages/chrony && tar zxf chrony_uos_arm64.tar.gz && \
            dpkg -i *.deb > /tmp/install_chrony.log 2>&1'
   when:
-  - 'ansible_distribution_major_version == "20"'
-  - 'ansible_distribution_release == "eagle"'
+  - 'ansible_distribution_major_version in ["20","\"20\""]'
+  - 'ansible_distribution_release in ["eagle","\"20\""]'
   - 'ansible_architecture == "aarch64"'
   ignore_errors: true
 

@@ -7,7 +7,6 @@
     - lxd-client
     - lxcfs
     - lxc-common
-  #when: ansible_distribution == "Ubuntu"
   when: 'ansible_distribution in ["Ubuntu","Debian","Kylin"]'
   ignore_errors: true
 
@@ -22,7 +21,7 @@
     - apache2-utils 
     - libaprutil1-dbd-sqlite3 
     - libaprutil1-ldap
-  when: 'ansible_distribution in ["uos"]'
+  when: 'ansible_distribution in ["uos","uos 20"]'
   ignore_errors: true
 
 # 安装基础软件包
@@ -59,7 +58,7 @@
 
   - name: 重启 rc.local 服务
     service: name=rc.local state=restarted enabled=yes
-  when: 'ansible_distribution in ["uos"]'
+  when: 'ansible_distribution in ["uos","uos 20"]'
 
 - name: 临时关闭 selinux
   shell: "setenforce 0"

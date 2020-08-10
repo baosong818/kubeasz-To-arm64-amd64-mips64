@@ -25,6 +25,11 @@
   - "/root/.kube"
   - "/etc/kubernetes"
   - "/var/lib/etcd"
+  - "/etc/cni"
+  - "/var/lib/cni"
+  - "/opt/cni"
+  - "/opt/containerd"
+  - "/opt/kube"
   when: "inventory_hostname in groups['kube-master'] or inventory_hostname in groups['kube-node']"
 
 - name: clean iptables

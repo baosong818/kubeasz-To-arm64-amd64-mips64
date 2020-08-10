@@ -12,16 +12,15 @@
     line: "{{ storage.nfs.server_path }} *(rw,sync,insecure,no_subtree_check,no_root_squash)"
 
 - name: 启动nfs 服务
-  service: name={{ item }} state=restarted enabled=yes
-  with_items:
-  - nfs
+  shell: systemctl enable nfs && systemctl enable rpcbind && systemctl restart rpcbind && systemctl restart nfs
   when: 'ansible_distribution in ["CentOS","RedHat","Amazon"]'
 
 - name: 启动nfs 服务
-  service: name={{ item }} state=restarted enabled=yes
-  with_items:
-  - nfs-kernel-server
-  when: 'ansible_distribution in ["Ubuntu","Debian","Kylin","uos"]'
+  shell: systemctl enable nfs-kernel-server && systemctl enable rpcbind && systemctl restart rpcbind && systemctl restart nfs-kernel-server
+#  service: name={{ item }} state=restarted enabled=yes
+#  with_items:
+#  - nfs-kernel-server
+  when: 'ansible_distribution in ["Ubuntu","Debian","Kylin","uos","uos 20"]'
 
 - block:
   - name: 准备nfs-client 配置目录

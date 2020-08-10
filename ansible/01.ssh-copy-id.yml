@@ -6,7 +6,11 @@
       authorized_key: user=root key="{{ lookup('file', '/root/.ssh/id_rsa.pub') }}"
 
     - name: change resolv
-      raw: "echo nameserver {{ Dnsmasq|quote }} >> /etc/resolv.conf"
+      blockinfile:
+        path: /etc/resolv.conf
+        block: |
+         nameserver {{ Dnsmasq|quote }}
+      #raw: "echo nameserver {{ Dnsmasq|quote }} >> /etc/resolv.conf"
 
     - name: change name
       raw: "echo {{ hostname|quote }} > /etc/hostname"

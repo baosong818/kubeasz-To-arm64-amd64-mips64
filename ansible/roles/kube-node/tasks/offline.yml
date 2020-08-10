@@ -1,0 +1,141 @@
+# 离线安装基础系统包
+- name: 准备离线安装包目录
+  file: name=/opt/kube/packages/k8s state=directory
+
+- block:
+  - name: 分发 k8s_juniper_ft_Kylin 离线包
+    copy:
+      src: "{{ base_dir }}/packages/k8s_juniper_arm64.tar.gz"
+      dest: "/opt/kube/packages/k8s/k8s_juniper_arm64.tar.gz"
+
+  # 离线安装包可能需要安装多次才能成功
+  - name: 安装 k8s_juniper_ft_Kylin 离线包
+    shell: 'cd /opt/kube/packages/k8s && tar zxf k8s_juniper_arm64.tar.gz && \
+           dpkg -i *.deb > /tmp/install_k8s.log 2>&1'
+    register: install_info
+    until: not install_info.failed
+    retries: 3
+    delay: 1
+  when:
+  - 'ansible_distribution_major_version == "4"'
+  - 'ansible_distribution_release == "juniper"'
+  ignore_errors: true
+
+- block:
+  - name: 分发 k8s_eagle_uso 离线包
+    copy:
+      src: "{{ base_dir }}/packages/k8s_uos_arm64.tar.gz"
+      dest: "/opt/kube/packages/k8s/k8s_uos_arm64.tar.gz"
+
+  # 离线安装包可能需要安装多次才能成功
+  - name: 安装 k8s_eagle_uos 离线包
+    shell: 'cd /opt/kube/packages/k8s && tar zxf k8s_uos_arm64.tar.gz && \
+           dpkg -i *.deb > /tmp/install_k8s.log 2>&1'
+    register: install_info
+    until: not install_info.failed
+    retries: 3
+    delay: 1
+  when:
+  - 'ansible_distribution_major_version in ["20","\"20\""]'
+  - 'ansible_distribution_release in ["eagle","\"20\""]'
+  - 'ansible_architecture == "aarch64"'
+  ignore_errors: true
+
+- block:
+  - name: 分发 k8s_xenial 离线包
+    copy:
+      src: "{{ base_dir }}/packages/k8s_xenial.tar.gz"
+      dest: "/opt/kube/packages/k8s/k8s_xenial.tar.gz"
+
+  # 离线安装包可能需要安装多次才能成功
+  - name: 安装 k8s_xenial 离线包
+    shell: 'cd /opt/kube/packages/k8s && tar zxf k8s_xenial.tar.gz && \
+           dpkg -i *.deb > /tmp/install_k8s.log 2>&1'
+    register: install_info
+    until: not install_info.failed
+    retries: 3
+    delay: 1
+  when: ansible_distribution_release == "xenial"
+  ignore_errors: true
+
+- block:
+  - name: 分发 k8s_bionic 离线包
+    copy:
+      src: "{{ base_dir }}/packages/k8s_bionic.tar.gz"
+      dest: "/opt/kube/packages/k8s/k8s_bionic.tar.gz"
+
+  # 离线安装包可能需要安装多次才能成功
+  - name: 安装 k8s_bionic 离线包
+    shell: 'cd /opt/kube/packages/k8s && tar zxf k8s_bionic.tar.gz && \
+           dpkg -i *.deb > /tmp/install_k8s.log 2>&1'
+    register: install_info
+    until: not install_info.failed
+    retries: 3
+    delay: 1
+  when: ansible_distribution_release == "bionic"
+  ignore_errors: true
+
+- block:
+  - name: 分发 k8s_centos7 离线包
+    copy:
+      src: "{{ base_dir }}/packages/k8s_centos7.tar.gz"
+      dest: "/opt/kube/packages/k8s/k8s_centos7.tar.gz"
+
+  - name: 安装 k8s_centos7 离线包
+    shell: 'cd /opt/kube/packages/k8s && tar zxf k8s_centos7.tar.gz && \
+           rpm -Uvh --force --nodeps *.rpm > /tmp/install_k8s.log 2>&1'
+  when:
+  - 'ansible_distribution_major_version == "7"'
+  - 'ansible_distribution_release == "Core"'
+  - 'ansible_distribution == "CentOS"'
+  ignore_errors: true
+
+# 中标麒麟 And CentOS7_arm64
+- block:
+  - name: 分发 k8s_centos7_arm64 离线包
+    copy:
+      src: "{{ base_dir }}/packages/k8s_centos7_arm64.tar.gz"
+      dest: "/opt/kube/packages/k8s/k8s_centos7_arm64.tar.gz"
+
+  - name: 安装 k8s_centos7_arm64 离线包
+    shell: 'cd /opt/kube/packages/k8s && tar zxf k8s_centos7_arm64.tar.gz && \
+           rpm -Uvh --force --nodeps *.rpm > /tmp/install_k8s.log 2>&1'
+  when:
+  - 'ansible_distribution_major_version == "7"'
+  - 'ansible_distribution_release in ["AltArch","Maipo"]'
+  - 'ansible_distribution in ["CentOS","RedHat"]'
+  ignore_errors: true
+
+- block:
+  - name: 分发 k8s_stretch 离线包
+    copy:
+      src: "{{ base_dir }}/packages/k8s_stretch.tar.gz"
+      dest: "/opt/kube/packages/k8s/k8s_stretch.tar.gz"
+
+  # 离线安装包可能需要安装多次才能成功
+  - name: 安装 k8s_stretch 离线包
+    shell: 'cd /opt/kube/packages/k8s && tar zxf k8s_stretch.tar.gz && \
+           dpkg -i *.deb > /tmp/install_k8s.log 2>&1'
+    register: install_info
+    until: not install_info.failed
+    retries: 3
+    delay: 1
+  when: ansible_distribution_release == "stretch"
+  ignore_errors: true
+
+- block:
+  - name: 分发 k8s_buster 离线包
+    copy:
+      src: "{{ base_dir }}/packages/k8s_buster.tar.gz"
+      dest: "/opt/kube/packages/k8s/k8s_buster.tar.gz"
+
+  # 离线安装包可能需要安装多次才能成功
+  - name: 安装 k8s_buster 离线包
+    shell: 'cd /opt/kube/packages/k8s && tar zxf k8s_buster.tar.gz && \
+           dpkg -i *.deb > /tmp/install_k8s.log 2>&1'
+    register: install_info
+    until: not install_info.failed
+    retries: 3
+    delay: 1
+  when: ansible_distribution_release == "buster"
+  ignore_errors: true
