@@ -41,8 +41,19 @@ EX_APISERVER_VIP=192.168.20.40
 # Dnsmasq服务器地址，harbor需要dns解析才可使用
 Dnsmasq=192.168.20.19
 
-# Harbor仓库地址，采用kubeadm v1.15.12版本
+# Harbor仓库地址，采用kubeadm v1.15.12/v1.17.9版本
 Image_Repo="harbor.bochtec.com/k8s115"
+#Image_Repo="harbor.bochtec.com/k8s117"
+
+# 域名访问iccp的地址，需要自定义
+Service_Domain="api.iccp.bochtec.com"
+Static_Domain="iccp.bochtec.com"
+Helm_Domain="helm.bochtec.com"
+
+# ICCP数据库服务授权用户、库名、密码
+ICCP_DB="iccp"
+ICCP_USER="iccp"
+ICCP_PASS="iccp123"
 
 # -------------- 下述变量不推荐更改 ---------------------
 # K8S网络插件，支持calico、flannel

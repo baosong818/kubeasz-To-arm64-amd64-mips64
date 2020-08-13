@@ -18,10 +18,10 @@
     - name: set hostname
       shell: "hostnamectl set-hostname {{ hostname|quote }}"
 
-    - name: "add the line to the tail of the file"
+    - name: "add nodename to hosts"
       blockinfile:
         path: /etc/hosts
         block: |
           {{ item.name }}
       with_items:
-        - { name: "{% for node in groups['all'] %}{{ hostvars[node]['ansible_ssh_host'] }}   {{ hostvars[node]['hostname'] }}\n{% endfor %}" }
+        - { name: "{% for node in groups['all'] %}{{ hostvars[node]['ansible_ssh_host'] }}   {{ hostvars[node]['hostname'] }}\n{% endfor %}{{ EX_APISERVER_VIP }}   {{ Service_Domain }} {{ Static_Domain }} {{ Helm_Domain }}" }

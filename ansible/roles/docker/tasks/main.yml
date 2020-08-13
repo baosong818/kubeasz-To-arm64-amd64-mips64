@@ -7,23 +7,8 @@
   shell: 'systemctl stop containerd'
   when: '"running" in containerd_status.stdout'
 
-- name: 添加Docker-ce 仓库
-  shell: "wget http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo -O /etc/yum.repos.d/docker-ce.repo"
-  when: 'INSTALL_SOURCE != "offline"'
-
-- name: 安装Docker 软件包
-  yum: 
-    name: 
-      - docker-ce-19.03.12
-      - docker-ce-cli-19.03.12
-      - containerd.io
-      - container-selinux
-    state: present
-  when: 'INSTALL_SOURCE != "offline"'
-
 # 离线安装Docker 软件包
 - import_tasks: offline.yml
-  when: 'INSTALL_SOURCE == "offline"'
 
 - name: 准备docker相关目录
   file: name=/etc/docker state=directory

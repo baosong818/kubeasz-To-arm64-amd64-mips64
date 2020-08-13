@@ -1,5 +1,4 @@
 tillerVer: "v2.16.5"
-tiller_offline: "tiller.tar"
 helm_namespace: "kube-system"
 tiller_image: "harbor.bochtec.com/k8s-base/tiller:v2.16.7"
 repo_url: "https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts"

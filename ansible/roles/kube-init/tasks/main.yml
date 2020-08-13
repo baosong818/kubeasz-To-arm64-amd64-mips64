@@ -1,19 +1,5 @@
-- name: 添加K8S 仓库
-  template: src=kubernetes.repo dest=/etc/yum.repos.d/kubernetes.repo
-  when: 'INSTALL_SOURCE != "offline"'
-
-- name: 安装K8S 软件包
-  yum: 
-    name: 
-      - kubeadm-1.15.12
-      - kubectl-1.15.12
-      - kubelet-1.15.12
-    state: present
-  when: 'INSTALL_SOURCE != "offline"'
-
 # 离线安装K8S 软件包
 - import_tasks: offline.yml
-  when: 'INSTALL_SOURCE == "offline"'
 
 - name: enable kubelet 服务
   shell: systemctl enable kubelet
@@ -66,5 +52,4 @@
     - "admin.conf"
     - "pki.tar.gz"
     - "kubeadm-init.log"
-
   when: "inventory_hostname == groups['kube-master'][0]"

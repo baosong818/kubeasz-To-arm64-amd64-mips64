@@ -1,6 +1,21 @@
+- block:
+  - name: 获取K8S 版本信息
+    shell: echo {{ Image_Repo }} | awk -F '/' '{print $2}'
+    register: k8s_ver
+
+  - name: 设置K8S 版本信息
+    set_fact: K8S_VER={{ k8s_ver.stdout }}
+  connection: local
+  run_once: true
+
 - name: 配置 calico DaemonSet yaml文件
-  template: src=calico.yaml.j2 dest={{ k8s_dir }}/calico.yaml
-    
+  template: src=calico-3.9.yaml.j2 dest={{ k8s_dir }}/calico.yaml
+  when: 'K8S_VER == "k8s115"'
+
+- name: 配置 calico DaemonSet yaml文件
+  template: src=calico-3.15.yaml.j2 dest={{ k8s_dir }}/calico.yaml
+  when: 'K8S_VER != "k8s115"'
+
 # 只需单节点执行一次
 - name: 运行 calico网络
   shell: "kubectl apply -f {{ k8s_dir }}/calico.yaml"

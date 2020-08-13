@@ -8,7 +8,7 @@
     - "k8s-dashboard.ing.yaml"
 
   - name: 生成 dashboard 相关 tls 密钥
-    shell: "openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout {{ base_dir }}/manifests/dashboard/tls.key -out {{ base_dir }}/manifests/dashboard/tls.crt -subj '/CN=${dashboardDomain}' && \
+    shell: "openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout {{ base_dir }}/manifests/dashboard/tls.key -out {{ base_dir }}/manifests/dashboard/tls.crt -subj '/CN={{ dashboardDomain }}' && \
             kubectl -n kube-system create secret tls traefik-cert --key={{ base_dir }}/manifests/dashboard/tls.key --cert={{ base_dir }}/manifests/dashboard/tls.crt"
 
   - name: 创建 dashboard tls部署

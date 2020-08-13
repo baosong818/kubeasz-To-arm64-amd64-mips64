@@ -17,13 +17,13 @@
     - name: set hostname
       shell: "hostnamectl set-hostname {{ hostname|quote }}"
 
-    - name: "add the line to the tail of the file"
+    - name: "add nodename to hosts"
       blockinfile:
         path: /etc/hosts
         block: |
           {{ item.name }}
       with_items:
-        - { name: "{% for node in groups['all'] %}{{ hostvars[node]['ansible_ssh_host'] }}   {{ hostvars[node]['hostname'] }}\n{% endfor %}" }
+        - { name: "{% for node in groups['all'] %}{{ hostvars[node]['ansible_ssh_host'] }}   {{ hostvars[node]['hostname'] }}\n{% endfor %}"{{ EX_APISERVER_VIP }}   {{ Service_Domain }} {{ Static_Domain }} {{ Helm_Domain }}" }
 
 # 选配：配置时间服务
 - hosts:
@@ -91,21 +91,14 @@
   roles:
   - cluster-addon
   
-# helm部署
-- hosts: 
-  - kube-master
-  roles:
-  - helm
-
-# nfs存储部署  
+# nfs存储部署
 - hosts: kube-master
   roles:
   - cluster-storage
   run_once: true
 
-# iccp部署
-- hosts: kube-master
+# helm部署
+- hosts: 
+  - kube-master
   roles:
-  - iccp
-  connection: local
-  run_once: true
+  - helm

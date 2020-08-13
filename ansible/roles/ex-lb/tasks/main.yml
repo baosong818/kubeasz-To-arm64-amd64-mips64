@@ -14,16 +14,8 @@
   - /etc/haproxy
   - /etc/keepalived 
 
-- name: 安装 haproxy+keepalived
-  package: name={{ item }} state=present
-  with_items:
-  - haproxy
-  - keepalived
-  when: 'INSTALL_SOURCE != "offline"'
-
 # 离线安装 haproxy+keepalived
 - import_tasks: offline.yml
-  when: 'INSTALL_SOURCE == "offline"'
 
 - name: 修改centos的haproxy.service
   template: src=haproxy.service.j2 dest=/usr/lib/systemd/system/haproxy.service

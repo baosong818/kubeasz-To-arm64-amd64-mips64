@@ -1,7 +1,6 @@
 - hosts: kube-master
   roles:
   - kube-init
-  tags: a0
 
 - hosts: localhost
   tasks:
@@ -10,14 +9,11 @@
 
     - name: 创建admin 用户访问权限
       shell: "kubectl apply -f {{ base_dir }}/manifests/dashboard/admin-user-sa-rbac.yaml"
-  tags: a1
 
 - hosts: kube-master
   roles:
   - { role: kube-master, when: "inventory_hostname != groups['kube-master'][0]" }
-  tags: a2
 
 - hosts: kube-node
   roles:
   - { role: kube-node, when: "inventory_hostname not in groups['kube-master']" }
-  tags: a4

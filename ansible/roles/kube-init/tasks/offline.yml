@@ -1,3 +1,12 @@
+- block:
+  - name: 获取K8S 版本信息
+    shell: echo {{ Image_Repo }} | awk -F '/' '{print $2}'
+    register: k8s_ver
+
+  - name: 设置K8S 版本信息
+    set_fact: K8S_VER={{ k8s_ver.stdout }}
+  connection: local
+
 # 离线安装基础系统包
 - name: 准备离线安装包目录
   file: name=/opt/kube/packages/k8s state=directory
@@ -5,7 +14,7 @@
 - block:
   - name: 分发 k8s_juniper_ft_Kylin 离线包
     copy:
-      src: "{{ base_dir }}/packages/k8s_juniper_arm64.tar.gz"
+      src: "{{ base_dir }}/packages/{{ K8S_VER }}/k8s_juniper_arm64.tar.gz"
       dest: "/opt/kube/packages/k8s/k8s_juniper_arm64.tar.gz"
 
   # 离线安装包可能需要安装多次才能成功
@@ -24,7 +33,7 @@
 - block:
   - name: 分发 k8s_eagle_uso 离线包
     copy:
-      src: "{{ base_dir }}/packages/k8s_uos_arm64.tar.gz"
+      src: "{{ base_dir }}/packages/{{ K8S_VER }}/k8s_uos_arm64.tar.gz"
       dest: "/opt/kube/packages/k8s/k8s_uos_arm64.tar.gz"
 
   # 离线安装包可能需要安装多次才能成功
@@ -44,7 +53,7 @@
 - block:
   - name: 分发 k8s_xenial 离线包
     copy:
-      src: "{{ base_dir }}/packages/k8s_xenial.tar.gz"
+      src: "{{ base_dir }}/packages/{{ K8S_VER }}/k8s_xenial.tar.gz"
       dest: "/opt/kube/packages/k8s/k8s_xenial.tar.gz"
 
   # 离线安装包可能需要安装多次才能成功
@@ -61,7 +70,7 @@
 - block:
   - name: 分发 k8s_bionic 离线包
     copy:
-      src: "{{ base_dir }}/packages/k8s_bionic.tar.gz"
+      src: "{{ base_dir }}/packages/{{ K8S_VER }}/k8s_bionic.tar.gz"
       dest: "/opt/kube/packages/k8s/k8s_bionic.tar.gz"
 
   # 离线安装包可能需要安装多次才能成功
@@ -78,7 +87,7 @@
 - block:
   - name: 分发 k8s_centos7 离线包
     copy:
-      src: "{{ base_dir }}/packages/k8s_centos7.tar.gz"
+      src: "{{ base_dir }}/packages/{{ K8S_VER }}/k8s_centos7.tar.gz"
       dest: "/opt/kube/packages/k8s/k8s_centos7.tar.gz"
 
   - name: 安装 k8s_centos7 离线包
@@ -94,7 +103,7 @@
 - block:
   - name: 分发 k8s_centos7_arm64 离线包
     copy:
-      src: "{{ base_dir }}/packages/k8s_centos7_arm64.tar.gz"
+      src: "{{ base_dir }}/packages/{{ K8S_VER }}/k8s_centos7_arm64.tar.gz"
       dest: "/opt/kube/packages/k8s/k8s_centos7_arm64.tar.gz"
 
   - name: 安装 k8s_centos7_arm64 离线包
@@ -109,7 +118,7 @@
 - block:
   - name: 分发 k8s_stretch 离线包
     copy:
-      src: "{{ base_dir }}/packages/k8s_stretch.tar.gz"
+      src: "{{ base_dir }}/packages/{{ K8S_VER }}/k8s_stretch.tar.gz"
       dest: "/opt/kube/packages/k8s/k8s_stretch.tar.gz"
 
   # 离线安装包可能需要安装多次才能成功
@@ -126,7 +135,7 @@
 - block:
   - name: 分发 k8s_buster 离线包
     copy:
-      src: "{{ base_dir }}/packages/k8s_buster.tar.gz"
+      src: "{{ base_dir }}/packages/{{ K8S_VER }}/k8s_buster.tar.gz"
       dest: "/opt/kube/packages/k8s/k8s_buster.tar.gz"
 
   # 离线安装包可能需要安装多次才能成功

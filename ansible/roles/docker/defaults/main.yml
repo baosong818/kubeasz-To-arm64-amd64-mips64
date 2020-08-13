@@ -15,6 +15,3 @@ REG_MIRRORS: '["https://harbor.bochtec.com", "https://dockerhub.azk8s.cn", "http
 
 # 信任的HTTP仓库
 INSECURE_REG: '["127.0.0.1/8", "harbor.bochtec.com"]'
-
-# 离线安装系统软件包 (offline|online)
-INSTALL_SOURCE: "offline"

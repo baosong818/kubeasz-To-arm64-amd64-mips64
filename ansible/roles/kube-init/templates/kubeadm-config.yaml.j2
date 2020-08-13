@@ -36,7 +36,10 @@ certificatesDir: /etc/kubernetes/pki
 clusterName: kubernetes
 controllerManager:
   extraArgs:
-    bind-address: 0.0.0.0
+    bind-address: "0.0.0.0"
+{% if "115" not in Image_Repo %}
+    port: "10252"
+{% endif %}
 {% if groups['ex-lb']|length > 0 %}
 controlPlaneEndpoint: "{{ EX_APISERVER_VIP }}:{{ EX_APISERVER_PORT }}"
 {% endif %}
@@ -49,14 +52,23 @@ etcd:
     dataDir: /var/lib/etcd
 imageRepository: {{ Image_Repo }}
 kind: ClusterConfiguration
+{% if "115" in Image_Repo %}
 kubernetesVersion: v1.15.12
+{% elif "117" in Image_Repo %}
+kubernetesVersion: v1.17.9
+{% elif "118" in Image_Repo %}
+kubernetesVersion: v1.18.6
+{% endif %}
 networking:
   dnsDomain: cluster.local
   serviceSubnet: {{ SERVICE_CIDR }}
   podSubnet: {{ CLUSTER_CIDR }}
 scheduler:
   extraArgs:
-    bind-address: 0.0.0.0
+    bind-address: "0.0.0.0"
+{% if "115" not in Image_Repo %}
+    port: "10251"
+{% endif %}
 ---
 apiVersion: kubeproxy.config.k8s.io/v1alpha1
 kind: KubeProxyConfiguration

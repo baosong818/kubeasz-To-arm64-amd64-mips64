@@ -3,7 +3,6 @@
   ignore_errors: true
   when: 
   - 'ansible_distribution in ["Ubuntu","Debian","Kylin","uos","uos 20"]'
-  - 'INSTALL_SOURCE != "offline"'
 
 - name: apt 卸载无用包
   shell: 'apt --fix-broken install -y && apt autoremove -y'
@@ -22,13 +21,8 @@
       warn: false
   ignore_errors: true
 
-- name: 安装 chrony
-  package: name=chrony state=present
-  when: 'INSTALL_SOURCE != "offline"'
-
 # 离线安装 chrony
 - import_tasks: offline.yml
-  when: 'INSTALL_SOURCE == "offline"'
 
 - block:
   - name: 配置 chrony server 
