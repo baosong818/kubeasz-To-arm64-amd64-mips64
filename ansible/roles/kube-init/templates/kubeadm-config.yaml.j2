@@ -54,6 +54,8 @@ imageRepository: {{ Image_Repo }}
 kind: ClusterConfiguration
 {% if "115" in Image_Repo %}
 kubernetesVersion: v1.15.12
+{% elif "116" in Image_Repo %}
+kubernetesVersion: v1.16.13
 {% elif "117" in Image_Repo %}
 kubernetesVersion: v1.17.9
 {% elif "118" in Image_Repo %}
